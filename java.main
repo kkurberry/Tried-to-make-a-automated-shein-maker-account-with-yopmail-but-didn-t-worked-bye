@@ -1,0 +1,60 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class SheinAccountCreator {
+    public static void main(String[] args) {
+        try {
+            // Get the email from Yopmail.fr
+            String yopmailUrl = "http://www.yopmail.fr/en/email-generator.php";
+            URL url = new URL(yopmailUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            StringBuilder emailBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("@yopmail.fr")) {
+                    emailBuilder.append(line);
+                    break;
+                }
+            }
+            reader.close();
+            String email = emailBuilder.toString();
+
+            // Create an account on Shein.top using the email from Yopmail.fr
+            String sheinUrl = "https://www.shein.top/";
+            String sheinAccountCreationUrl = sheinUrl + "user/register";
+            String sheinAccountCreationParams = "email=" + email + "&password=your_password";
+            url = new URL(sheinAccountCreationUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.getOutputStream().write(sheinAccountCreationParams.getBytes());
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder resultBuilder = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                resultBuilder.append(line);
+            }
+            reader.close();
+            String result = resultBuilder.toString();
+
+            // Send the result to your Discord webhook
+            String discordWebhookUrl = "https://discord.com/api/webhooks/your_webhook_url";
+            String discordWebhookParams = "content=" + result;
+            url = new URL(discordWebhookUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.getOutputStream().write(discordWebhookParams.getBytes());
+            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            while ((line = reader.readLine()) != null) {
+                // Do nothing, just send the result to the webhook
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
